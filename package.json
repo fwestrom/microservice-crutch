@@ -1,6 +1,6 @@
 {
   "name": "microservice-crutch",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Makes it easy to write a micro-service with medseek-util-microservices+AMQP.",
   "main": "./crutch.js",
   "repository": "https://github.com/medseek-engineering/microservice-crutch.git",

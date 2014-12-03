@@ -49,6 +49,7 @@ describe('crutch', function() {
             call: function() { return when.resolve(); },
             send: function() { return when.resolve(); },
             useTransport: function() { return when.resolve(); },
+            dispose: function() {},
         });
 
         crutch = _.partial(proxyquire('../crutch.js', {
