@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Makes it easy to write a micro-service with medseek-util-microservices+AMQP.",
   "main": "./crutch.js",
-  "repository": "https://github.com/fwestrom/microservice-crutch.git",
+  "repository": "https://github.com/medseek-engineering/microservice-crutch.git",
   "dependencies": {
     "lodash": "^2.4.1",
     "log4js": "^0.6.21",
