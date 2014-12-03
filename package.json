@@ -7,7 +7,7 @@
   "dependencies": {
     "lodash": "^2.4.1",
     "log4js": "^0.6.21",
-    "medseek-util-microservices": "0.0.14",
+    "medseek-util-microservices": "0.0.15",
     "minimist": "^1.1.0",
     "when": "^3.6.3"
   },
