@@ -1,0 +1,31 @@
+{
+  "name": "microservice-crutch",
+  "version": "0.0.1",
+  "description": "Makes it easy to write a micro-service with medseek-util-microservices+AMQP.",
+  "main": "./crutch.js",
+  "repository": "https://github.com/medseek-engineering/microservice-crutch.git",
+  "dependencies": {
+    "lodash": "^2.4.1",
+    "log4js": "^0.6.21",
+    "medseek-util-microservices": "0.0.14",
+    "minimist": "^1.1.0",
+    "when": "^3.6.3"
+  },
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "gulp": "^3.8.9",
+    "gulp-mocha": "^1.1.1",
+    "gulp-nodemon": "^1.0.4",
+    "gulp-util": "^3.0.1",
+    "mocha": "^2.0.1",
+    "node-uuid": "^1.4.1",
+    "nodemon": "^1.2.1",
+    "proxyquire": "^1.0.1",
+    "should": "^4.1.0",
+    "sinon": "^1.11.1"
+  },
+  "scripts": {
+    "start": "node cructh.js",
+    "test": "node node_modules/gulp/bin/gulp.js test"
+  }
+}
