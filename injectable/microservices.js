@@ -1,24 +1,23 @@
 'use strict';
 
-module.exports = function microservices(_, app, inject, logging, options, url, util, when, whenFn) {
+module.exports = function microservices(_, app, inject, logging, options) {
     var log = logging.getLogger('microservice-crutch.microservices');
-    log.debug('Initializing medseek-util-microservices module; options:', options);
+    log.debug('Initializing medseek-util-microservices module.');
 
     return inject.resolve('medseek-util-microservices')
-        .then(function(ms) {
-            return ms(options);
+        .then(function(microservices) {
+            return inject(microservices);
         })
         .then(function(ms) {
-            app.on('shutdown', function() {
-                log.debug('Shutting down medseek-util-microservices module.');
-                ms.dispose();
-            });
-            ms.on('error', function(error) {
-                log.error('Unexpected error:', error);
-            });
-            return ms.useTransport(ms.AmqpTransport, options)
-                .delay(10)
-                .yield(ms);
+            return inject(ms.AmqpTransport)
+                .then(function(transport) {
+                    var shutdownHandler = _.partial(onShutdown, ms, transport);
+                    app.once('shutdown', shutdownHandler);
+                    ms.on('error', onError);
+                    transport.on('error', onError);
+                    return ms.useTransport(transport, options);
+                })
+                .return(ms);
         })
         .then(function(ms) {
             var bindings = {};
@@ -30,4 +29,20 @@ module.exports = function microservices(_, app, inject, logging, options, url, u
                 },
             }, ms);
         });
+
+    function onError(error) {
+        if (app.listeners('error').length > 0) {
+            return _.partial(app.emit, 'error').apply(app, arguments);
+        }
+        else {
+            throw error;
+        }
+    }
+
+    function onShutdown(ms, transport) {
+        log.debug('Shutting down medseek-util-microservices module.');
+        ms.removeListener('error', onError);
+        transport.removeListener('error', onError);
+        ms.dispose();
+    }
 };

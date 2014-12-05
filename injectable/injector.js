@@ -1,20 +1,18 @@
 'use strict';
 
 var _ = require('lodash');
-var when = require('when');
+var Promise;
 
 var idMap = {
-    _: 'lodash',
-    whenFn: 'when/function',
-    whenFunction: 'when/function',
-    whenNode: 'when/node'
+    _: 'lodash'
 };
 
-module.exports = _.partial(injector, {
-    'medseek-util-microservices': require('medseek-util-microservices')
-});
+module.exports = _.partial(injector, { _: _ });
 
 function injector(cache, injectables) {
+    if (!Promise) {
+        Promise = injectables.Promise || require('bluebird');
+    }
     return _.extend(_.partial(inject, cache, injectables), {
         child: _.partial(child, cache, injectables),
         resolve: function(id, overrides) {
@@ -30,11 +28,11 @@ function child(cache, injectables, overrides) {
 }
 
 function inject(cache, injectables, fn, overrides) {
-    return when.try(function() {
+    return Promise.try(function() {
         var re = /^function\s(?:\w+)?\(([^\)]*)\)/g;
         var ids = _(re.exec(fn.toString())).drop(1).first().split(', ');
         var resolver = _.partialRight(_.partial(resolve, cache, injectables), overrides);
-        return when.all(_.map(ids, resolver))
+        return Promise.all(_.map(ids, resolver))
             .then(function(values) {
                 return fn.apply(undefined, values);
             });
@@ -42,7 +40,7 @@ function inject(cache, injectables, fn, overrides) {
 }
 
 function resolve(cache, injectables, id, overrides) {
-    return when.try(function() {
+    return Promise.try(function() {
         var mappedId = idMap[id];
         if (mappedId !== undefined) {
             id = mappedId;

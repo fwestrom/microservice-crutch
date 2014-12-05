@@ -5,8 +5,8 @@ var events = require('events');
 var logging = require('log4js');
 var medseekUtilMicroservices =require('medseek-util-microservices');
 var minimist = require('minimist');
+var Promise = require('bluebird');
 var util = require('util');
-var when = require('when');
 
 var injector = require('./injectable/injector.js');
 
@@ -20,24 +20,30 @@ module.exports = function crutch(defaultOptions, callback) {
         throw new Error('A callback initializing the micro-service is required.');
     }
 
-    var inject = injector({
+    var inject = injector(_.extend({
         app: new events.EventEmitter(),
         defaultOptions: defaultOptions,
-        'medseek-util-microservices': medseekUtilMicroservices
-    });
+        Promise: Promise,
+        uuid: require('node-uuid'),
+        serializer: require('medseek-util-microservices/serializer'),
+        'medseek-util-microservices': medseekUtilMicroservices,
+    }, defaultOptions.injectables));
+
     return inject(function(_, app, inject, logging, options) {
         _.extend(app, {
             when: {
-                shutdown: when.promise(function(resolve) { app.on('shutdown', resolve); }),
+                shutdown: new Promise(function(resolve) { app.on('shutdown', resolve); }),
             },
-            shutdown: _.partial(inject, shutdown)
+            shutdown: function() {
+                return inject(shutdown);
+            }
         });
 
         var log = logging.getLogger('microservices-crutch');
         log.info('Started process; pid: %s, options:', process.pid, options);
 
-        return when(app)
-            .then(function() {
+        return Promise
+            .try(function() {
                 return inject(initialize);
             })
             .then(function() {
@@ -51,9 +57,9 @@ module.exports = function crutch(defaultOptions, callback) {
             })
             .then(function() {
                 log.info('Ready.');
-                return when.call(app.emit, 'ready');
+                return Promise.try(app.emit, 'ready');
             })
-            .yield(app);
+            .return(app);
     });
 };
 
@@ -85,7 +91,7 @@ function initialize(app, inject, logging, options) {
         }
     });
 
-    return when.try(inject, function(microservices) {
+    return Promise.try(inject, function(microservices) {
         log.trace('Initialized microservices module:', microservices);
     });
 }
@@ -94,7 +100,9 @@ function shutdown(app, logging) {
     var log = logging.getLogger('microservices-crutch');
     log.info('Shutting down.');
 
-    return when.call(app.emit, 'shutdown');
+    return Promise.try(function() {
+        return app.emit('shutdown');
+    });
 }
 
 // When started directly
