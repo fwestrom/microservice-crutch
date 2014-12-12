@@ -51,7 +51,7 @@ module.exports = function crutch(defaultOptions, callback) {
             })
             .then(function() {
                 return inject(function(microservices) {
-                    log.debug('crutch: microservices.bindings:', microservices.bindings);
+                    log.debug('crutch| microservices.bindings:', microservices.bindings);
                     _.extend(app, microservices.bindings);
                 });
             })

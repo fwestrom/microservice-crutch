@@ -50,6 +50,7 @@ describe('crutch', function() {
             send: function() { return Promise.resolve(); },
             AmqpTransport: function AmqpTransport(options) { return {}; },
             useTransport: function() { return Promise.resolve(); },
+            dispose: function() {},
         });
 
         crutch = _.partial(proxyquire('../crutch.js', {

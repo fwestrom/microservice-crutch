@@ -23,10 +23,6 @@
     "should": "^4.1.0",
     "sinon": "^1.11.1"
   },
-  "peerDependencies": {
-    "gulp-nodemon": "^1.0.4",
-    "nodemon": "^1.2.1"
-  },
   "scripts": {
     "self": "node crutch.js",
     "test": "node node_modules/mocha/bin/mocha test --ll=WARN"
