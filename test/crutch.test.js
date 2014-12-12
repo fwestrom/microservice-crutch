@@ -4,10 +4,10 @@ describe('crutch', function() {
     var _ = require('lodash');
     var events = require('events');
     var log4js = require('log4js');
+    var Promise = require('bluebird');
     var proxyquire = require('proxyquire');
     var should = require('should');
     var sinon = require('sinon');
-    var when = require('when');
     var inject = require('../injectable/injector.js')({
         defaultOptions: {
             defaultExchange: 'topic://abcdefg',
@@ -43,12 +43,13 @@ describe('crutch', function() {
         ms = _.extend(new events.EventEmitter(), {
             bind: sinon.spy(function(addr, cb) {
                 log.debug('bind| %s ->', addr, cb);
-                return when.resolve();
+                return Promise.resolve();
             }),
-            bindReply: function() { return when.resolve(); },
-            call: function() { return when.resolve(); },
-            send: function() { return when.resolve(); },
-            useTransport: function() { return when.resolve(); },
+            bindReply: function() { return Promise.resolve(); },
+            call: function() { return Promise.resolve(); },
+            send: function() { return Promise.resolve(); },
+            AmqpTransport: function AmqpTransport(options) { return {}; },
+            useTransport: function() { return Promise.resolve(); },
             dispose: function() {},
         });
 
@@ -64,18 +65,18 @@ describe('crutch', function() {
 
         callback = function(app, microservices) {
             _app = app;
-            return when.all(_.map(bindings, function(fn, rk) {
+            return Promise.all(_.map(bindings, function(fn, rk) {
                 return microservices.bind(rk, fn)
                     .delay(1);
             }));
         };
 
-        return when.resolve();
+        return Promise.resolve();
     });
 
     afterEach(function() {
         log.debug('afterEach| Cleaning up');
-        return when.try(function() {
+        return Promise.try(function() {
             if (_app) {
                 return _app.shutdown();
             }

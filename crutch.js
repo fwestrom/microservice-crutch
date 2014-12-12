@@ -2,14 +2,15 @@
 
 var _ = require('lodash');
 var events = require('events');
-var medseekUtilMicroservices = require('medseek-util-microservices');
-var when = require('when');
+var logging = require('log4js');
+var medseekUtilMicroservices =require('medseek-util-microservices');
+var minimist = require('minimist');
+var Promise = require('bluebird');
+var util = require('util');
 
 var injector = require('./injectable/injector.js');
 
-module.exports = crutch;
-
-function crutch(defaultOptions, callback) {
+module.exports = function crutch(defaultOptions, callback) {
     if (!(callback instanceof Function) && defaultOptions instanceof Function) {
         var tmp = callback;
         callback = defaultOptions;
@@ -19,95 +20,90 @@ function crutch(defaultOptions, callback) {
         throw new Error('A callback initializing the micro-service is required.');
     }
 
-    var inject = injector({
+    var inject = injector(_.extend({
         app: new events.EventEmitter(),
         defaultOptions: defaultOptions,
-        'medseek-util-microservices': medseekUtilMicroservices
-    });
+        Promise: Promise,
+        uuid: require('node-uuid'),
+        serializer: require('medseek-util-microservices/serializer'),
+        'medseek-util-microservices': medseekUtilMicroservices,
+    }, defaultOptions.injectables));
 
-    return inject(function(app, inject, logging, options) {
-        var log = logging.getLogger('crutch');
-        log.info('Started process; pid: %s, options:', process.pid, options);
-
+    return inject(function(_, app, inject, logging, options) {
         _.extend(app, {
             when: {
-                ready: when.promise(function(resolve) { app.on('ready', resolve); }),
-                shutdown: when.promise(function(resolve) { app.on('shutdown', resolve); }),
+                shutdown: new Promise(function(resolve) { app.on('shutdown', resolve); }),
             },
-            shutdown: shutdown,
+            shutdown: function() {
+                return inject(shutdown);
+            }
         });
 
-        return when(app)
-            .then(initialize)
+        var log = logging.getLogger('microservices-crutch');
+        log.info('Started process; pid: %s, options:', process.pid, options);
+
+        return Promise
+            .try(function() {
+                return inject(initialize);
+            })
             .then(function() {
                 return inject(callback);
             })
             .then(function() {
                 return inject(function(microservices) {
-                    log.debug('microservices.bindings:', microservices.bindings);
+                    log.debug('crutch| microservices.bindings:', microservices.bindings);
                     _.extend(app, microservices.bindings);
                 });
             })
-            .then(function ready() {
+            .then(function() {
                 log.info('Ready.');
-                return when.call(app.emit, 'ready');
+                return Promise.try(app.emit, 'ready');
             })
-            .yield(app);
+            .return(app);
+    });
+};
 
-        function initialize() {
-            log.debug('Initializing.');
+function initialize(app, inject, logging, options) {
+    var log = logging.getLogger('microservices-crutch');
+    log.debug('Initializing crutch.');
 
-            return when()
-                .then(function() {
-                    return inject(function(microservices) {
-                        log.trace('Initialized microservices module:', microservices);
-                    });
+    log.debug('Setting up signal/exit handlers:', options.shutdownOn);
+
+    options.shutdownOn.forEach(function(signal) {
+        log.trace('Setting up handler for signal:', signal);
+
+        process.on(signal, signalHandler);
+        app.on('shutdown', shutdownHandler);
+
+        function signalHandler() {
+            log.warn('Received signal:', signal);
+            app.shutdown()
+                .delay(10)
+                .tap(function() {
+                    process.exit();
                 })
-                .then(function() {
-                    log.debug('Setting up signal handlers:', options.shutdownOn);
-                    _.forEach(options.shutdownOn, function(signal) {
-                        log.trace('Setting up signal handler:', signal);
-
-                        var signalHandler = onSignal(signal);
-                        process.on(signal, signalHandler);
-
-                        var shutdownHandler = onShutdownForSignal(signal, signalHandler);
-                        app.once('shutdown', shutdownHandler);
-                    });
-                });
-
-            function onShutdownForSignal(signal, signalHandler) {
-                return function() {
-                    log.trace('onShutdownForSignal| signal: %s', signal);
-                    process.removeListener(signal, signalHandler);
-                };
-            }
-
-            function onSignal(signal) {
-                return function() {
-                    log.warn('Received signal:', signal);
-                    shutdown()
-                        //.delay(5)
-                        .finally(function() {
-                            process.exit();
-                        })
-                        .done();
-                };
-            }
+                .done();
         }
 
-        function shutdown() {
-            log.info('Shutting down.');
-            return when.call(app.emit, 'shutdown')
-                .then(function() {
-                    return inject(function(microservices) {
-                        return microservices.dispose();
-                    });
-                });
+        function shutdownHandler() {
+            process.removeListener(signal, signalHandler);
+            app.removeListener('shutdown', shutdownHandler);
         }
     });
 
-};
+    return Promise.try(inject, function(microservices) {
+        log.trace('Initialized microservices module:', microservices);
+    });
+}
+
+function shutdown(app, logging) {
+    var log = logging.getLogger('microservices-crutch');
+    log.info('Shutting down.');
+
+    return Promise.try(function() {
+        return app.emit('shutdown');
+    });
+}
 
 // When started directly
 if (require.main === module) {
