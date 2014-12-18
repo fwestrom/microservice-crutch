@@ -96,13 +96,17 @@ function initialize(app, inject, logging, options) {
     });
 }
 
-function shutdown(app, logging) {
+function shutdown(app, logging, microservices) {
     var log = logging.getLogger('microservices-crutch');
     log.info('Shutting down.');
 
-    return Promise.try(function() {
-        return app.emit('shutdown');
-    });
+    return Promise
+        .try(function() {
+            return app.emit('shutdown');
+        })
+        .then(function() {
+            return app.emit('shutdown-last');
+        });
 }
 
 // When started directly
