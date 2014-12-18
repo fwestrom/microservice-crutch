@@ -12,7 +12,7 @@ module.exports = function microservices(_, app, inject, logging, options) {
             return inject(ms.AmqpTransport)
                 .then(function(transport) {
                     var shutdownHandler = _.partial(onShutdown, ms, transport);
-                    app.once('shutdown', shutdownHandler);
+                    app.once('shutdown-last', shutdownHandler);
                     ms.on('error', onError);
                     transport.on('error', onError);
                     return ms.useTransport(transport, options);
