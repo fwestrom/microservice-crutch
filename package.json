@@ -1,9 +1,9 @@
 {
   "name": "microservice-crutch",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Makes it easy to write a micro-service with medseek-util-microservices+AMQP.",
   "main": "./crutch.js",
-  "repository": "https://github.com/medseek-engineering/microservice-crutch.git",
+  "repository": "https://github.com/fwestrom/microservice-crutch.git",
   "dependencies": {
     "amqplib": "^0.3.0",
     "bluebird": "^2.3.11",
