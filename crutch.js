@@ -21,7 +21,7 @@ module.exports = function crutch(defaultOptions, callback) {
     }
 
     var inject = injector(_.extend({
-        app: new events.EventEmitter(),
+        app: _.bindAll(new events.EventEmitter()),
         defaultOptions: defaultOptions,
         Promise: Promise,
         uuid: require('node-uuid'),
