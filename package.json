@@ -1,17 +1,17 @@
 {
   "name": "microservice-crutch",
-  "version": "0.0.8",
-  "description": "Makes it easy to write a micro-service with medseek-util-microservices+AMQP.",
+  "version": "1.0.1",
+  "description": "Makes it easy to write a micro-service with qtort-microservices+AMQP.",
   "main": "./crutch.js",
   "repository": "https://github.com/fwestrom/microservice-crutch.git",
   "dependencies": {
-    "amqplib": "^0.3.0",
-    "bluebird": "^2.3.11",
-    "lodash": "^2.4.1",
-    "log4js": "^0.6.21",
-    "medseek-util-microservices": "^0.1.0",
-    "minimist": "^1.1.0",
-    "node-uuid": "^1.4.2"
+    "amqplib": ">=0.4.0",
+    "bluebird": ">=2.10.2",
+    "lodash": ">=3.10.1",
+    "log4js": ">=0.6.21",
+    "qtort-microservices": ">=1.0.1",
+    "minimist": ">=1.1.0",
+    "node-uuid": ">=1.4.2"
   },
   "devDependencies": {
     "gulp": "^3.8.9",

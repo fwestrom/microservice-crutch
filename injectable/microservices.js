@@ -2,9 +2,9 @@
 
 module.exports = function microservices(_, app, inject, logging, options) {
     var log = logging.getLogger('microservice-crutch.microservices');
-    log.debug('Initializing medseek-util-microservices module.');
+    log.debug('Initializing qtort-microservices module.');
 
-    return inject.resolve('medseek-util-microservices')
+    return inject.resolve('qtort-microservices')
         .then(function(microservices) {
             return inject(microservices);
         })
@@ -14,7 +14,9 @@ module.exports = function microservices(_, app, inject, logging, options) {
                     var shutdownHandler = _.partial(onShutdown, ms, transport);
                     app.once('shutdown-last', shutdownHandler);
                     ms.on('error', onError);
-                    transport.on('error', onError);
+                    if (transport.on) {
+                        transport.on('error', onError);
+                    }
                     return ms.useTransport(transport, options);
                 })
                 .return(ms);
@@ -40,9 +42,11 @@ module.exports = function microservices(_, app, inject, logging, options) {
     }
 
     function onShutdown(ms, transport) {
-        log.debug('Shutting down medseek-util-microservices module.');
+        log.debug('Shutting down qtort-microservices module.');
         ms.removeListener('error', onError);
-        transport.removeListener('error', onError);
+        if (transport.removeListener) {
+            transport.removeListener('error', onError);
+        }
         ms.dispose();
     }
 };

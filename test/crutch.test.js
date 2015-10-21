@@ -54,7 +54,7 @@ describe('crutch', function() {
         });
 
         crutch = _.partial(proxyquire('../crutch.js', {
-            'medseek-util-microservices': _.extend(function(options, serializer) {
+            'qtort-microservices': _.extend(function(options, serializer) {
                 return ms;
             }, {
                 '@noCallThru': false,

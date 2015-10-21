@@ -3,7 +3,7 @@
 var _ = require('lodash');
 var events = require('events');
 var logging = require('log4js');
-var medseekUtilMicroservices =require('medseek-util-microservices');
+var qtortMicroservices = require('qtort-microservices');
 var minimist = require('minimist');
 var Promise = require('bluebird');
 var util = require('util');
@@ -25,8 +25,8 @@ module.exports = function crutch(defaultOptions, callback) {
         defaultOptions: defaultOptions,
         Promise: Promise,
         uuid: require('node-uuid'),
-        serializer: require('medseek-util-microservices/serializer'),
-        'medseek-util-microservices': medseekUtilMicroservices,
+        serializer: require('qtort-microservices/serializer'),
+        'qtort-microservices': qtortMicroservices,
     }, defaultOptions.injectables));
 
     return inject(function(_, app, inject, logging, options) {
