@@ -1,6 +1,6 @@
 {
   "name": "microservice-crutch",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Makes it easy to write a micro-service with qtort-microservices+AMQP.",
   "main": "./crutch.js",
   "repository": "https://github.com/fwestrom/microservice-crutch.git",
@@ -9,7 +9,7 @@
     "bluebird": ">=2.10.2",
     "lodash": ">=3.10.1",
     "log4js": ">=0.6.21",
-    "qtort-microservices": ">=1.0.5",
+    "qtort-microservices": ">=1.0.6",
     "minimist": ">=1.1.0",
     "node-uuid": ">=1.4.2"
   },
